@@ -227,7 +227,7 @@ go run . -debug   # expose debugger port for terraform-plugin-go
 
 Use `TF_LOG=DEBUG` to see structured API call logs from the provider.
 
-[extensions]: docs/architecture/extensions.md
+[extensions]: docs/architecture/extensions/index.md
 [registry]: https://registry.terraform.io/providers/republique-et-canton-de-geneve/openapi/latest
 [tpf]: https://github.com/hashicorp/terraform-plugin-framework
 [sdk]: https://developer.hashicorp.com/terraform/plugin/framework-benefits
