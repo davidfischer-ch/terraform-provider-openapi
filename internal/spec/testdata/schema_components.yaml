@@ -1,0 +1,111 @@
+---
+openapi: "3.0.3"
+info:
+  title: Test
+  version: "1"
+paths: {}
+components:
+  schemas:
+    SimpleString:
+      type: string
+      description: "a plain string"
+    ReadOnly:
+      type: string
+      readOnly: true
+    Immutable:
+      type: string
+      x-immutable: true
+    Sensitive:
+      type: string
+      x-sensitive: true
+    SensitiveOptOut:
+      type: string
+      x-sensitive: false
+    Integer:
+      type: integer
+    Number:
+      type: number
+    Boolean:
+      type: boolean
+    ObjectNested:
+      type: object
+      required:
+        - inner_name
+      properties:
+        inner_name:
+          type: string
+        inner_count:
+          type: integer
+    ArrayString:
+      type: array
+      items:
+        type: string
+    ArrayObject:
+      type: array
+      items:
+        type: object
+        properties:
+          item_id:
+            type: integer
+          item_name:
+            type: string
+    Resource:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        size:
+          type: integer
+        status:
+          type: string
+          readOnly: true
+    StringMaxLength:
+      type: string
+      maxLength: 10
+    StringMinLength:
+      type: string
+      minLength: 2
+    StringPattern:
+      type: string
+      pattern: ^[0-9]{4,5}$
+    StringPatternAndMaxLength:
+      type: string
+      pattern: ^[0-9]{4,5}$
+      maxLength: 5
+    IntegerMinMax:
+      type: integer
+      minimum: 0
+      maximum: 100
+    DirectEnum:
+      type: string
+      enum:
+      - foo
+      - bar
+      - baz
+    EnumRef:
+      type: string
+      enum:
+      - LAB
+      - DEV
+      - PROD
+    AllOfEnum:
+      allOf:
+      - $ref: '#/components/schemas/EnumRef'
+    OneOfEnumA:
+      type: string
+      enum:
+      - X
+      - Y
+    OneOfEnumB:
+      enum:
+      - ''
+    OneOfEnum:
+      oneOf:
+      - $ref: '#/components/schemas/OneOfEnumA'
+      - $ref: '#/components/schemas/OneOfEnumB'
+...

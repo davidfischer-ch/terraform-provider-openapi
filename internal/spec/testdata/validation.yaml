@@ -1,0 +1,131 @@
+---
+openapi: 3.0.3
+info:
+  title: Validation spec (test fixture)
+  version: 0.1.0
+  description: Generic spec covering all OAS3 validation constraint types supported by the provider.
+paths:
+  /api/v1/items/:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Item'
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Item'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+  /api/v1/items/{id}/:
+    get:
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+    patch:
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Item'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+    delete:
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      responses:
+        '204':
+          description: No Content
+components:
+  schemas:
+    # ChoiceEnum is reused across allOf and direct $ref patterns (same use-case).
+    ChoiceEnum:
+      type: string
+      enum: [A, B, C, D]
+    # BlankEnum enables the nullable oneOf pattern (oneOf: [ChoiceEnum, BlankEnum]).
+    BlankEnum:
+      enum: ['']
+    Item:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255  # maxLength constraint
+        code:
+          type: string
+          pattern: ^[0-9]{4,5}$  # pattern + maxLength
+          maxLength: 5
+        label:
+          type: string
+          maxLength: 255
+        choice:
+          allOf:  # enum via allOf ($ref pattern)
+          - $ref: '#/components/schemas/ChoiceEnum'
+        choice_direct:
+          $ref: '#/components/schemas/ChoiceEnum'  # enum via direct $ref
+        state:
+          allOf:
+          - $ref: '#/components/schemas/ChoiceEnum'
+          readOnly: true
+        disk_size:
+          type: integer
+          minimum: 0     # integer minimum
+          maximum: 4096  # integer maximum
+          format: int64
+        note:
+          type: string
+          maxLength: 50
+        domain:
+          oneOf:   # enum via oneOf (nullable pattern)
+          - $ref: '#/components/schemas/ChoiceEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        enabled:
+          type: boolean
+      required:
+      - choice
+      - code
+      - id
+      - label
+      - name
+      - state
+...
