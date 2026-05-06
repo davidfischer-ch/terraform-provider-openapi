@@ -19,14 +19,13 @@ import (
 // Ensure OpenAPIProvider satisfies various provider interfaces.
 var _ provider.Provider = &OpenAPIProvider{}
 
-// OpenAPIProvider is initialised once per Terraform run. The OpenAPI spec is
-// loaded from OPENAPI_SPEC at New() time so that Resources() can return the
-// full list of dynamically discovered resource types before Configure() is called.
+// OpenAPIProvider is initialised once per Terraform run. The OpenAPI spec is loaded from
+// OPENAPI_SPEC at New() time so that Resources() can return the full list of dynamically
+// discovered resource types before Configure() is called.
 type OpenAPIProvider struct {
 	version string
 	prefix  string // resource type name prefix, e.g. "openapi" produces openapi_<name>
 	specs   []*spec.ResourceSpec
-	loadErr string // non-empty: Configure() surfaces it as a diagnostic error
 }
 
 type OpenAPIProviderModel struct {
@@ -108,11 +107,6 @@ func (self *OpenAPIProvider) Configure(
 	req provider.ConfigureRequest,
 	resp *provider.ConfigureResponse,
 ) {
-	if self.loadErr != "" {
-		resp.Diagnostics.AddError("Missing OpenAPI Spec", self.loadErr)
-		return
-	}
-
 	var config OpenAPIProviderModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
@@ -228,31 +222,33 @@ func (self *OpenAPIProvider) DataSources(ctx context.Context) []func() datasourc
 	return factories
 }
 
-// New returns the provider factory used by providerserver.Serve. The OpenAPI
-// spec is loaded immediately from OPENAPI_SPEC so that Resources() is populated
-// before Terraform calls Configure().
+// New returns the provider factory used by providerserver.Serve. The spec is loaded at call time
+// so Resources() is fully populated before Configure() runs. If the spec is missing or unreadable,
+// the process exits immediately: there is nothing useful the provider can do without it.
 func New(version string) func() provider.Provider {
+	prefix := envOr("OPENAPI_PREFIX", "openapi")
+
+	specSource := os.Getenv("OPENAPI_SPEC")
+	if specSource == "" {
+		fmt.Fprintln(os.Stderr, "error: OPENAPI_SPEC is not set. "+
+			"Export it to the path or URL of your OpenAPI 3 spec before running Terraform.")
+		os.Exit(1)
+	}
+
+	model, err := spec.LoadModel(specSource)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: unable to load spec from %s: %s\n", specSource, err)
+		os.Exit(1)
+	}
+
+	specs := spec.DiscoverResources(model)
+
 	return func() provider.Provider {
-		p := &OpenAPIProvider{
+		return &OpenAPIProvider{
 			version: version,
-			prefix:  envOr("OPENAPI_PREFIX", "openapi"),
+			prefix:  prefix,
+			specs:   specs,
 		}
-
-		specSource := os.Getenv("OPENAPI_SPEC")
-		if specSource == "" {
-			p.loadErr = "OPENAPI_SPEC is not set. " +
-				"Export it to the path or URL of your OpenAPI 3 spec before running Terraform."
-			return p
-		}
-
-		model, err := spec.LoadModel(specSource)
-		if err != nil {
-			p.loadErr = fmt.Sprintf("Unable to load spec from %s, got error: %s", specSource, err)
-			return p
-		}
-
-		p.specs = spec.DiscoverResources(model)
-		return p
 	}
 }
 

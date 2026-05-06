@@ -33,14 +33,17 @@ func readSource(source string) ([]byte, error) {
 	if strings.HasPrefix(source, "http://") || strings.HasPrefix(source, "https://") {
 		resp, err := http.Get(source) //nolint:gosec
 		if err != nil {
-			return nil, fmt.Errorf("fetching spec from %s: %w", source, err)
+			return nil, err
 		}
 		defer func() { _ = resp.Body.Close() }()
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("server returned %s", resp.Status)
+		}
 		return io.ReadAll(resp.Body)
 	}
 	data, err := os.ReadFile(source)
 	if err != nil {
-		return nil, fmt.Errorf("reading spec file %s: %w", source, err)
+		return nil, err
 	}
 	return data, nil
 }

@@ -38,9 +38,6 @@ func TestReadSource_FileNotFound(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
-	if !strings.Contains(err.Error(), "reading spec file") {
-		t.Errorf("error %q does not contain %q", err.Error(), "reading spec file")
-	}
 }
 
 func TestReadSource_HTTP(t *testing.T) {
@@ -62,9 +59,6 @@ func TestReadSource_HTTPError(t *testing.T) {
 	_, err := readSource("http://localhost:1")
 	if err == nil {
 		t.Fatal("expected error, got nil")
-	}
-	if !strings.Contains(err.Error(), "fetching spec from") {
-		t.Errorf("error %q does not contain %q", err.Error(), "fetching spec from")
 	}
 }
 
@@ -120,5 +114,20 @@ func TestLoadModel_ValidHTTP(t *testing.T) {
 	}
 	if model == nil {
 		t.Fatal("expected non-nil model")
+	}
+}
+
+func TestLoadModel_HTTPNonOK(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.Error(w, "service unavailable", http.StatusServiceUnavailable)
+	}))
+	defer srv.Close()
+
+	_, err := LoadModel(srv.URL)
+	if err == nil {
+		t.Fatal("expected error for non-200 HTTP response")
+	}
+	if !strings.Contains(err.Error(), "503") {
+		t.Errorf("error %q does not mention status code", err.Error())
 	}
 }
