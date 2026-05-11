@@ -197,17 +197,18 @@ func (self *OpenAPIProvider) Configure(
 func (self *OpenAPIProvider) Resources(ctx context.Context) []func() resource.Resource {
 	factories := make([]func() resource.Resource, 0, len(self.specs))
 	for _, s := range self.specs {
-		tfSchema, attrTypes := buildResourceSchema(s.Fields)
+		tfSchema, attrTypes, timeoutsType := buildResourceSchema(s.Fields, s.Timeouts)
 		tflog.Debug(
 			ctx,
 			"registered resource",
 			map[string]any{"type": self.prefix + "_" + s.SingularName})
 		factories = append(factories, func() resource.Resource {
 			return &DynamicResource{
-				spec:      s,
-				tfSchema:  tfSchema,
-				attrTypes: attrTypes,
-				prefix:    self.prefix,
+				spec:         s,
+				tfSchema:     tfSchema,
+				attrTypes:    attrTypes,
+				timeoutsType: timeoutsType,
+				prefix:       self.prefix,
 			}
 		})
 	}

@@ -30,10 +30,10 @@ resource and data source, with support for custom extensions (`x-immutable`, `x-
 ```hcl
 provider "openapi" {
   url          = "https://api.example.com/v1"
-  token        = var.api_token   # or OPENAPI_TOKEN
+  token        = var.api_token  # or OPENAPI_TOKEN
   insecure     = false
-  prefix       = "openapi"       # must match OPENAPI_PREFIX
-  untyped_mode = "json"          # must match OPENAPI_UNTYPED_MODE
+  prefix       = "openapi"      # must match OPENAPI_PREFIX
+  untyped_mode = "json"         # must match OPENAPI_UNTYPED_MODE
 }
 ```
 
@@ -101,6 +101,16 @@ automatically translated into Terraform validators applied at plan time. Enum va
 See [validators.md](guides/validators.md) for the full list and enum pattern details.
 
 
+## Timeouts
+
+Per-operation timeouts are set via `x-timeout` on the OAS3 operation and can be overridden
+by the user in the resource `timeouts` block. The fallback is 20 minutes (Terraform's
+standard default).
+
+See [architecture/extensions/implemented/x-timeout.md](architecture/extensions/implemented/x-timeout.md)
+for the full specification.
+
+
 ## OAS3 extensions
 
 | Extension | Scope | Description |
@@ -108,6 +118,7 @@ See [validators.md](guides/validators.md) for the full list and enum pattern det
 | `x-computed` | field | Server sets or updates this field independently of user input |
 | `x-immutable` | field | Stable after creation: prior value kept in plan, change forces replace |
 | `x-sensitive` | field | Field value is redacted in plan and state |
+| `x-timeout` | operation | Default timeout for the corresponding Terraform action (create/read/update/delete) |
 
 Full extension documentation, naming rationale, and the planned roadmap extensions
 (`x-ignore-order`, `x-primary-key`, `x-tf-status`, …) are in

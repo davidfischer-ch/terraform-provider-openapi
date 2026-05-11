@@ -48,6 +48,14 @@ type FieldSpec struct {
 	ItemSpec *FieldSpec   // for type == "array"
 }
 
+// ResourceTimeouts holds the x-timeout defaults for each CRUD operation.
+type ResourceTimeouts struct {
+	Create string // duration string, e.g. "30m"; empty means use provider default
+	Read   string
+	Update string
+	Delete string
+}
+
 // ResourceSpec describes a discovered API resource.
 type ResourceSpec struct {
 
@@ -73,6 +81,10 @@ type ResourceSpec struct {
 	// Schema
 
 	Fields []*FieldSpec
+
+	// Timeouts
+
+	Timeouts ResourceTimeouts // x-timeout defaults per operation
 }
 
 // ResolvedItemPath substitutes the ID into the item path template.

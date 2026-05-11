@@ -16,7 +16,7 @@ func TestBuildResourceSchema_produces_correct_keys(t *testing.T) {
 		{Name: "id", Type: "string", IsID: true},
 		{Name: "name", Type: "string", Writable: true, Required: true},
 	}
-	s, attrTypes := buildResourceSchema(fields)
+	s, attrTypes, _ := buildResourceSchema(fields, spec.ResourceTimeouts{})
 	if _, ok := s.Attributes["id"]; !ok {
 		t.Fatal("expected id in schema")
 	}
@@ -25,6 +25,37 @@ func TestBuildResourceSchema_produces_correct_keys(t *testing.T) {
 	}
 	if attrTypes["id"] != types.StringType {
 		t.Fatalf("id attrType: got %v", attrTypes["id"])
+	}
+}
+
+func TestBuildResourceSchema_timeouts_block_present(t *testing.T) {
+	fields := []*spec.FieldSpec{{Name: "id", Type: "string", IsID: true}}
+	s, _, timeoutsType := buildResourceSchema(fields, spec.ResourceTimeouts{Create: "30m", Delete: "10m"})
+
+	block, ok := s.Blocks["timeouts"]
+	if !ok {
+		t.Fatal("expected timeouts block in schema")
+	}
+	nested, ok := block.(schema.SingleNestedBlock)
+	if !ok {
+		t.Fatalf("timeouts block: expected SingleNestedBlock, got %T", block)
+	}
+	for _, op := range []string{"create", "read", "update", "delete"} {
+		if _, ok := nested.Attributes[op]; !ok {
+			t.Errorf("expected %q attribute in timeouts block", op)
+		}
+	}
+
+	if timeoutsType.AttrTypes["create"] != types.StringType {
+		t.Fatalf("timeoutsType.create: got %v", timeoutsType.AttrTypes["create"])
+	}
+}
+
+func TestBuildResourceSchema_attrTypes_excludes_timeouts(t *testing.T) {
+	fields := []*spec.FieldSpec{{Name: "name", Type: "string", Writable: true}}
+	_, attrTypes, _ := buildResourceSchema(fields, spec.ResourceTimeouts{})
+	if _, ok := attrTypes["timeouts"]; ok {
+		t.Fatal("attrTypes must not include timeouts (it is managed separately)")
 	}
 }
 
