@@ -92,6 +92,7 @@ func buildResourceSpec(name string, listInfo, itemInfo *pathInfo) *ResourceSpec 
 
 	// Timeouts
 	if listInfo != nil {
+		rs.Timeouts.List = operationTimeout(listInfo.item.Get)
 		rs.Timeouts.Create = operationTimeout(listInfo.item.Post)
 	}
 	rs.Timeouts.Read = operationTimeout(itemInfo.item.Get)

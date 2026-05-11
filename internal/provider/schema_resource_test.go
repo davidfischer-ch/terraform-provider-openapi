@@ -41,8 +41,18 @@ func TestBuildResourceSchema_timeouts_block_present(t *testing.T) {
 		t.Fatalf("timeouts block: expected SingleNestedBlock, got %T", block)
 	}
 	for _, op := range []string{"create", "read", "update", "delete"} {
-		if _, ok := nested.Attributes[op]; !ok {
+		attr, ok := nested.Attributes[op]
+		if !ok {
 			t.Errorf("expected %q attribute in timeouts block", op)
+			continue
+		}
+		strAttr, ok := attr.(schema.StringAttribute)
+		if !ok {
+			t.Errorf("timeouts.%s: expected StringAttribute, got %T", op, attr)
+			continue
+		}
+		if len(strAttr.Validators) == 0 {
+			t.Errorf("timeouts.%s: expected positiveDuration validator to be attached", op)
 		}
 	}
 

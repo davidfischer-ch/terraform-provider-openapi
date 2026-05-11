@@ -297,7 +297,7 @@ func resolveTimeout(block types.Object, op string, specDefault string) time.Dura
 
 	base := fallbackDur
 	if specDefault != "" {
-		if d, err := time.ParseDuration(specDefault); err == nil {
+		if d, err := time.ParseDuration(specDefault); err == nil && d > 0 {
 			base = d
 		}
 	}

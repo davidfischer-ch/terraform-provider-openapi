@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/republique-et-canton-de-geneve/terraform-provider-openapi/internal/spec"
 )
@@ -61,6 +62,7 @@ func buildTimeoutsBlock(t spec.ResourceTimeouts) schema.Block {
 		return schema.StringAttribute{
 			MarkdownDescription: desc,
 			Optional:            true,
+			Validators:          []validator.String{positiveDuration{}},
 		}
 	}
 	return schema.SingleNestedBlock{

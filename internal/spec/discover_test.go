@@ -320,6 +320,9 @@ func TestDiscoverResources_Timeouts(t *testing.T) {
 	}
 	rs := specs[0]
 
+	if rs.Timeouts.List != "2m" {
+		t.Errorf("Timeouts.List = %q, want %q", rs.Timeouts.List, "2m")
+	}
 	if rs.Timeouts.Create != "30m" {
 		t.Errorf("Timeouts.Create = %q, want %q", rs.Timeouts.Create, "30m")
 	}
@@ -341,6 +344,9 @@ func TestDiscoverResources_TimeoutsAbsent(t *testing.T) {
 	}
 	rs := specs[0]
 
+	if rs.Timeouts.List != "" {
+		t.Errorf("Timeouts.List = %q, want empty", rs.Timeouts.List)
+	}
 	if rs.Timeouts.Create != "" {
 		t.Errorf("Timeouts.Create = %q, want empty", rs.Timeouts.Create)
 	}

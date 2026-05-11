@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	fwpath "github.com/hashicorp/terraform-plugin-framework/path"
@@ -274,6 +275,27 @@ func New(version string) func() provider.Provider {
 	}
 
 	specs := spec.DiscoverResources(model)
+
+	for _, s := range specs {
+		for _, op := range []struct{ name, val string }{
+			{"list", s.Timeouts.List},
+			{"create", s.Timeouts.Create},
+			{"read", s.Timeouts.Read},
+			{"update", s.Timeouts.Update},
+			{"delete", s.Timeouts.Delete},
+		} {
+			if op.val == "" {
+				continue
+			}
+			d, err := time.ParseDuration(op.val)
+			if err != nil || d <= 0 {
+				fmt.Fprintf(os.Stderr,
+					"error: resource %q x-timeout %q=%q is not a valid positive duration\n",
+					s.SingularName, op.name, op.val)
+				os.Exit(1)
+			}
+		}
+	}
 
 	if untypedMode == UntypedFieldModeError {
 		for _, s := range specs {

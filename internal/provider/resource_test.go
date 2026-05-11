@@ -105,6 +105,32 @@ func TestResolveTimeout_invalid_duration_falls_back(t *testing.T) {
 	}
 }
 
+func TestResolveTimeout_zero_spec_default_uses_fallback(t *testing.T) {
+	block := types.ObjectNull(map[string]attr.Type{
+		"create": types.StringType,
+		"read":   types.StringType,
+		"update": types.StringType,
+		"delete": types.StringType,
+	})
+	got := resolveTimeout(block, "create", "0s")
+	if got != 20*time.Minute {
+		t.Fatalf("got %v, want 20m fallback for zero spec default", got)
+	}
+}
+
+func TestResolveTimeout_negative_spec_default_uses_fallback(t *testing.T) {
+	block := types.ObjectNull(map[string]attr.Type{
+		"create": types.StringType,
+		"read":   types.StringType,
+		"update": types.StringType,
+		"delete": types.StringType,
+	})
+	got := resolveTimeout(block, "create", "-1m")
+	if got != 20*time.Minute {
+		t.Fatalf("got %v, want 20m fallback for negative spec default", got)
+	}
+}
+
 // --- extractTimeoutsBlock ------------------------------------------------------------------------
 
 func TestExtractTimeoutsBlock_present(t *testing.T) {

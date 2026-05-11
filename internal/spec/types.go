@@ -50,7 +50,8 @@ type FieldSpec struct {
 
 // ResourceTimeouts holds the x-timeout defaults for each CRUD operation.
 type ResourceTimeouts struct {
-	Create string // duration string, e.g. "30m"; empty means use provider default
+	List   string // collection GET (data source); duration string, e.g. "2m"; empty means use provider default
+	Create string
 	Read   string
 	Update string
 	Delete string

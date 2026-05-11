@@ -5,6 +5,8 @@ info:
   version: "1"
 paths:
   /api/v1/vms/:
+    get:
+      x-timeout: "2m"
     post:
       x-timeout: "30m"
       requestBody:

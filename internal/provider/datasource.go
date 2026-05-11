@@ -85,7 +85,7 @@ func (self *DynamicDataSource) Read(
 		return
 	}
 
-	readTimeout := resolveTimeout(nullTimeoutsBlock, "read", self.spec.Timeouts.Read)
+	readTimeout := resolveTimeout(nullTimeoutsBlock, "read", self.spec.Timeouts.List)
 	ctx, cancel := context.WithTimeout(ctx, readTimeout)
 	defer cancel()
 
