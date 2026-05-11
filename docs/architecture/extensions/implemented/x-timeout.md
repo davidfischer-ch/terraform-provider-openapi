@@ -3,15 +3,15 @@
 
 ## Properties
 
-* **Scope**: operation (POST, GET, PUT/PATCH, DELETE) per resource
-* **Value**: duration string e.g. `"30m"` or `"10s"`
+* **Scope**: operation (collection GET/POST, item GET/PUT/PATCH/DELETE) per resource
+* **Value**: duration string e.g. `"30m"` or `"10s"` (must be greater than zero)
 
 
 ## Description
 
-Sets the recommended default timeout for the corresponding Terraform action (create, read,
-update, delete). Each HTTP operation carries its own value. When absent, a 20-minute default
-applies (Terraform's standard default resource timeout).
+Sets the recommended default timeout for the corresponding Terraform action. Each HTTP operation
+carries its own value. When absent, a 20-minute default applies (Terraform's standard default
+resource timeout).
 
 
 ### Timeout resolution (priority order)
@@ -20,22 +20,32 @@ applies (Terraform's standard default resource timeout).
 2. `x-timeout` value in the OAS spec for that operation
 3. 20-minute provider fallback (Terraform's standard default)
 
+User-supplied values are validated at plan time: the string must be a valid duration and must be
+greater than zero.
+
 
 ### How each operation uses its timeout
 
-**read**: the `get` OAS3 operation x-timeout bounds all individual GET requests and the whole
-operation. Including the Read CRUD operation, any listing done by a data source, and each polling
-GET fired during any async operation described below.
+**list**: the collection-path `get` OAS3 operation x-timeout bounds the data source read. Not
+user-configurable (data sources have no `timeouts` block).
 
-**create**: the `post` OAS3 operation x-timeout bounds the single HTTP POST request and the whole
-create operation.
+Some APIs have no item-level GET endpoint; reading a resource then requires a filtered collection
+GET (e.g. `GET /tags?$filter=id eq {id}`). In that case the collection GET x-timeout also bounds
+the resource Read operation and should be treated the same as `read`. This case is not yet
+implemented in the provider.
 
-**update**: the `patch`/`put` OAS3 operation x-timeout bounds the PATCH/PUT request and the whole
-update operation. PATCH takes priority when both are declared; the x-timeout is read from whichever
-method is actually used.
+**read**: the item-path `get` OAS3 operation x-timeout bounds the resource Read CRUD operation and
+each polling GET fired during a delete.
 
-**delete**: the `delete` OAS3 operation x-timeout bounds the DELETE HTTP request and the whole
-delete operation. Each individual polling GET also applies the `get` OAS3 operation x-timeout as a
+**create**: the collection-path `post` OAS3 operation x-timeout bounds the POST request and the
+whole create operation.
+
+**update**: the item-path `patch`/`put` OAS3 operation x-timeout bounds the PATCH/PUT request and
+the whole update operation. PATCH takes priority when both are declared; the x-timeout is read from
+whichever method is actually used.
+
+**delete**: the item-path `delete` OAS3 operation x-timeout bounds the DELETE HTTP request and the
+whole delete operation. Each individual polling GET also applies the item `get` x-timeout as a
 nested sub-deadline, so the effective per-GET limit is the minimum of the remaining delete budget
 and the read timeout.
 
@@ -73,15 +83,17 @@ nothing is stored in state.
 
 ```yaml
 /vms/:
+  get:
+    x-timeout: "2m"   # list: data source read timeout
   post:
-    x-timeout: "30m"    # create: bound the POST request
+    x-timeout: "30m"  # create: bound the POST request
 /vms/{id}:
   get:
-    x-timeout: "10s"    # read: bound every GET (Read, data source list, delete polling)
+    x-timeout: "10s"  # read: bound resource Read and each delete polling GET
   put:
-    x-timeout: "15m"    # update: bound the PUT/PATCH request
+    x-timeout: "15m"  # update: bound the PUT/PATCH request
   delete:
-    x-timeout: "10m"    # delete: bound the DELETE call + all polling until gone
+    x-timeout: "10m"  # delete: bound the DELETE call + all polling until gone
 ```
 
 
