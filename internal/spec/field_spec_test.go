@@ -515,22 +515,22 @@ func TestIsComputedField(t *testing.T) {
 		want      bool
 	}{
 		{
-			name: "not writable → always computed regardless of extensions",
+			name:      "not writable → always computed regardless of extensions",
 			fieldType: "string", writable: false, schema: &base.Schema{},
 			want: true,
 		},
 		{
-			name: "writable string without extensions → not computed",
+			name:      "writable string without extensions → not computed",
 			fieldType: "string", writable: true, schema: &base.Schema{},
 			want: false,
 		},
 		{
-			name: "writable x-computed:true → computed",
+			name:      "writable x-computed:true → computed",
 			fieldType: "string", writable: true, schema: getSchema("XComputed"),
 			want: true,
 		},
 		{
-			name: "writable x-computed:false suppresses untyped+default",
+			name:      "writable x-computed:false suppresses untyped+default",
 			fieldType: "untyped", writable: true, schema: getSchema("XComputedFalseUntypedDefault"),
 			want: false,
 		},
@@ -542,7 +542,7 @@ func TestIsComputedField(t *testing.T) {
 			want:      true,
 		},
 		{
-			name: "writable untyped without default → not computed",
+			name:      "writable untyped without default → not computed",
 			fieldType: "untyped", writable: true, schema: &base.Schema{},
 			want: false,
 		},

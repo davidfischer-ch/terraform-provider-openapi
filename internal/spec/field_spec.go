@@ -290,4 +290,3 @@ func isWritableField(schema *base.Schema, paramWritable bool) bool {
 	}
 	return paramWritable
 }
-
