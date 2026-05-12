@@ -52,6 +52,32 @@ components:
             type: integer
           item_name:
             type: string
+    ArrayStringUnordered:
+      type: array
+      items:
+        type: string
+      x-unordered: true
+    ArrayObjectUnordered:
+      type: array
+      items:
+        type: object
+        properties:
+          item_id:
+            type: integer
+          item_name:
+            type: string
+      x-unordered: true
+    ArrayStringUniqueItems:
+      type: array
+      items:
+        type: string
+      uniqueItems: true
+    ArrayStringUnorderedUniqueItems:
+      type: array
+      items:
+        type: string
+      x-unordered: true
+      uniqueItems: true
     Resource:
       type: object
       required:

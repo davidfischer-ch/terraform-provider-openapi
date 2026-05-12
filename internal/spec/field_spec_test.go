@@ -57,20 +57,22 @@ func TestBuildFieldSpec(t *testing.T) {
 	model := mustParseFixture(t, "schema_components.yaml")
 
 	tests := []struct {
-		name          string
-		schemaName    string
-		fieldName     string
-		writable      bool
-		required      bool
-		wantType      string
-		wantComputed  bool
-		wantWritable  bool
-		wantRequired  bool
-		wantImmutable bool
-		wantSensitive bool
-		wantDesc      string
-		wantNestedLen int
-		wantItemType  string
+		name            string
+		schemaName      string
+		fieldName       string
+		writable        bool
+		required        bool
+		wantType        string
+		wantComputed    bool
+		wantWritable    bool
+		wantRequired    bool
+		wantImmutable   bool
+		wantUnordered   bool
+		wantUniqueItems bool
+		wantSensitive   bool
+		wantDesc        string
+		wantNestedLen   int
+		wantItemType    string
 	}{
 		{
 			name:       "writable required string",
@@ -151,6 +153,43 @@ func TestBuildFieldSpec(t *testing.T) {
 			writable: true,
 			wantType: "array", wantWritable: true, wantItemType: "object",
 		},
+		{
+			name:       "x-unordered on array of strings",
+			schemaName: "ArrayStringUnordered", fieldName: "groups",
+			writable:      true,
+			wantType:      "array",
+			wantWritable:  true,
+			wantItemType:  "string",
+			wantUnordered: true,
+		},
+		{
+			name:       "x-unordered on array of objects",
+			schemaName: "ArrayObjectUnordered", fieldName: "entries",
+			writable:      true,
+			wantType:      "array",
+			wantWritable:  true,
+			wantItemType:  "object",
+			wantUnordered: true,
+		},
+		{
+			name:       "uniqueItems on array of strings",
+			schemaName: "ArrayStringUniqueItems", fieldName: "tags",
+			writable:        true,
+			wantType:        "array",
+			wantWritable:    true,
+			wantItemType:    "string",
+			wantUniqueItems: true,
+		},
+		{
+			name:       "x-unordered + uniqueItems",
+			schemaName: "ArrayStringUnorderedUniqueItems", fieldName: "groups",
+			writable:        true,
+			wantType:        "array",
+			wantWritable:    true,
+			wantItemType:    "string",
+			wantUnordered:   true,
+			wantUniqueItems: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -175,6 +214,12 @@ func TestBuildFieldSpec(t *testing.T) {
 			}
 			if got.Immutable != tt.wantImmutable {
 				t.Errorf("Immutable = %v, want %v", got.Immutable, tt.wantImmutable)
+			}
+			if got.Unordered != tt.wantUnordered {
+				t.Errorf("Unordered = %v, want %v", got.Unordered, tt.wantUnordered)
+			}
+			if got.UniqueItems != tt.wantUniqueItems {
+				t.Errorf("UniqueItems = %v, want %v", got.UniqueItems, tt.wantUniqueItems)
 			}
 			if got.Sensitive != tt.wantSensitive {
 				t.Errorf("Sensitive = %v, want %v", got.Sensitive, tt.wantSensitive)

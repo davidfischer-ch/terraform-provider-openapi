@@ -132,8 +132,8 @@ func buildFieldSpec(
 		f.Writable = false
 	}
 	if schema.Extensions != nil {
-		if node, ok := schema.Extensions.Get("x-immutable"); ok && node != nil &&
-			node.Value == "true" {
+		node, ok := schema.Extensions.Get("x-immutable")
+		if ok && node != nil && node.Value == "true" {
 			f.Immutable = true
 		}
 	}
@@ -141,7 +141,8 @@ func buildFieldSpec(
 		f.Computed = true
 	}
 	if schema.Extensions != nil {
-		if node, ok := schema.Extensions.Get("x-computed"); ok && node != nil {
+		node, ok := schema.Extensions.Get("x-computed")
+		if ok && node != nil {
 			if node.Value == "true" {
 				f.Computed = true
 			} else {
@@ -151,6 +152,15 @@ func buildFieldSpec(
 					resourceName, name, node.Value)
 			}
 		}
+	}
+	if schema.Extensions != nil {
+		node, ok := schema.Extensions.Get("x-unordered")
+		if ok && node != nil && node.Value == "true" {
+			f.Unordered = true
+		}
+	}
+	if f.Type == "array" && schema.UniqueItems != nil && *schema.UniqueItems {
+		f.UniqueItems = true
 	}
 	f.Sensitive = isSensitiveField(name, schema)
 
